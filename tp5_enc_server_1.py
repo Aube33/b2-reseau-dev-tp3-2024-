@@ -6,7 +6,7 @@ sock.bind(('127.0.0.1', 9999))
 sock.listen()
 client, client_addr = sock.accept()
 
-END_MESSAGE = "<clafin>"
+FOOTER = 0
 
 while True:
     header = client.recv(4)
@@ -30,11 +30,11 @@ while True:
         bytes_received += len(chunk)
 
     message_received = b"".join(chunks).decode('utf-8')
-    end_check = message_received[-(len(END_MESSAGE)):]
-    message = message_received[:len(message_received)-len(END_MESSAGE)]
+    footer_msg = client.recv(1)
+    footer_data = int.from_bytes(footer_msg, byteorder='big')
 
-    if end_check == END_MESSAGE:
-        print(f"Received from client {message}")
+    if FOOTER == footer_data:
+        print(f"Received from client {message_received}")
     else:
         print("Aucun séquence de fin trouvée")
 
