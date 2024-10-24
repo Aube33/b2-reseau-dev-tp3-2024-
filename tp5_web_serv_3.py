@@ -38,9 +38,15 @@ while True:
 
                 response = "HTTP/1.0 200 OK\n\n" + html_content
             else:
-                response = "HTTP/1.0 404 Not Found\n\n<h1>Page non trouvée</h1>"
+                file = open(f'{HTML_MODELS}/404.html')
+                html_content = file.read()
+                file.close()
+                response = "HTTP/1.0 404 Not Found\n\n" + html_content
         else:
-            response = "HTTP/1.0 400 Bad Request\n\n<h1>Mauvaise requête</h1>"
+            file = open(f'{HTML_MODELS}/400.html')
+            html_content = file.read()
+            file.close()
+            response = "HTTP/1.0 400 Bad Request\n\n" + html_content
 
         client.send(response.encode("UTF-8"))
         break
