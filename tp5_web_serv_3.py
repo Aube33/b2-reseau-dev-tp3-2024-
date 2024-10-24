@@ -11,6 +11,12 @@ HTML_MODELS = "./htdocs/"
 
 print("Serveur lancé")
 
+def readHTML(fileName):
+    file = open(f'{HTML_MODELS}/{fileName}')
+    html_content = file.read()
+    file.close()
+    return html_content
+
 while True:
     client, client_addr = sock.accept()    
     while True:
@@ -32,20 +38,13 @@ while True:
 
             request = request[1:]
             if os.path.isfile(f'{HTML_MODELS}/{request}'):
-                file = open(f'{HTML_MODELS}/{request}')
-                html_content = file.read()
-                file.close()
-
+                html_content = readHTML(request)
                 response = "HTTP/1.0 200 OK\n\n" + html_content
             else:
-                file = open(f'{HTML_MODELS}/404.html')
-                html_content = file.read()
-                file.close()
+                html_content = readHTML("404.html")
                 response = "HTTP/1.0 404 Not Found\n\n" + html_content
         else:
-            file = open(f'{HTML_MODELS}/400.html')
-            html_content = file.read()
-            file.close()
+            html_content = readHTML("400.html")
             response = "HTTP/1.0 400 Bad Request\n\n" + html_content
 
         client.send(response.encode("UTF-8"))
