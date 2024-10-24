@@ -63,8 +63,14 @@ def readHTML(fileName:str, client_ip:str) -> str:
 
     return html_content
 
-def convertImage(fileName:str):
-    return
+def getFileBytes(fileName:str, client_ip:str) -> bytes:
+    file = open(f'{HTML_MODELS}/{fileName}', 'rb')
+    file_content = file.read()
+    file.close()
+
+    logging.info("Fichier %s enovyé au client %s", fileName, client_ip)
+
+    return file_content
 
 
 
@@ -75,7 +81,6 @@ sock.bind((HOST, PORT))
 sock.listen()
 
 logging.info("Le serveur tourne sur %s:%d", HOST, PORT)
-
 
 while True:
     client, (client_ip, client_port) = sock.accept()    
@@ -89,29 +94,33 @@ while True:
         if extractGet:
             request = extractGet.group(0)
 
-            # === Fichiers ===
-            if request.endswith(".jpg"):
-                
+            # Petite route de base pour faire joli
+            if request == "/":
+                request = "/index"
 
-            # === HTML ===
-            else:
-                # Petite route de base pour faire joli
-                if request == "/":
-                    request = "/index"
+            if not "." in request:
+                request+=".html"
 
-                if not ".html" in request:
-                    request+=".html"
+            request = request[1:]
+            if os.path.isfile(f'{HTML_MODELS}/{request}'):
+                # === Fichiers ===
+                if request.endswith(".png"):
+                    response = "HTTP/1.0 200 OK\r\nContent-Type: image/png\r\n\r\n"
+                    response_file = getFileBytes(request, client_ip)
+                    client.send(response.encode("UTF-8"))
+                    client.send(response_file)
+                    break
 
-                request = request[1:]
-                if os.path.isfile(f'{HTML_MODELS}/{request}'):
-                    html_content = readHTML(request, client_ip)
-                    response = "HTTP/1.0 200 OK\n\n" + html_content
+                # === HTML ===
                 else:
-                    html_content = readHTML("404.html", client_ip)
-                    response = "HTTP/1.0 404 Not Found\n\n" + html_content
+                    html_content = readHTML(request, client_ip)
+                    response = "HTTP/1.0 200 OK\r\n\r\n" + html_content
+            else:
+                html_content = readHTML("404.html", client_ip)
+                response = "HTTP/1.0 404 Not Found\r\n\r\n" + html_content
         else:
             html_content = readHTML("400.html", client_ip)
-            response = "HTTP/1.0 400 Bad Request\n\n" + html_content
+            response = "HTTP/1.0 400 Bad Request\r\n\r\n" + html_content
 
         client.send(response.encode("UTF-8"))
         break
