@@ -54,14 +54,17 @@ logger.addHandler(console_handler)
 
 
 # ===== FUNCTION =====
-def readHTML(fileName:str, client_ip:str):
-    file = open(f'{HTML_MODELS}/{fileName}')
-    html_content = file.read()
-    file.close()
-    
-    logging.info("Fichier %s enovyé au client %s", fileName, client_ip)
+def read_html(filename:str, ip:str) -> str:
+    """
+    Used to read .html file content and return it
+    """
+    file_content = ""
+    with open(f'{HTML_MODELS}/{filename}', encoding="UTF-8") as file:
+        file_content = file.read()
 
-    return html_content
+    logging.info("Fichier %s enovyé au client %s", filename, ip)
+
+    return file_content
 
 
 
@@ -75,36 +78,36 @@ logging.info("Le serveur tourne sur %s:%d", HOST, PORT)
 
 
 while True:
-    client, (client_ip, client_port) = sock.accept()    
+    client, (client_ip, client_port) = sock.accept()
     while True:
         data = client.recv(1024).decode("utf-8")
         if not data:
             break
 
-        response = ""
+        RESPONSE = ""
         extractGet = re.search(r"(?<=GET\s)\/?\S+", data)
         if extractGet:
-            request = extractGet.group(0)
+            REQUEST = extractGet.group(0)
 
             # Petite route de base pour faire joli
-            if request == "/":
-                request = "/index"
+            if REQUEST == "/":
+                REQUEST = "/index"
 
-            if not ".html" in request:
-                request+=".html"
+            if ".html" not in REQUEST:
+                REQUEST+=".html"
 
-            request = request[1:]
-            if os.path.isfile(f'{HTML_MODELS}/{request}'):
-                html_content = readHTML(request, client_ip)
-                response = "HTTP/1.0 200 OK\n\n" + html_content
+            REQUEST = REQUEST[1:]
+            if os.path.isfile(f'{HTML_MODELS}/{REQUEST}'):
+                html_content = read_html(REQUEST, client_ip)
+                RESPONSE = "HTTP/1.0 200 OK\n\n" + html_content
             else:
-                html_content = readHTML("404.html", client_ip)
-                response = "HTTP/1.0 404 Not Found\n\n" + html_content
+                html_content = read_html("404.html", client_ip)
+                RESPONSE = "HTTP/1.0 404 Not Found\n\n" + html_content
         else:
-            html_content = readHTML("400.html", client_ip)
-            response = "HTTP/1.0 400 Bad Request\n\n" + html_content
+            html_content = read_html("400.html", client_ip)
+            RESPONSE = "HTTP/1.0 400 Bad Request\n\n" + html_content
 
-        client.send(response.encode("UTF-8"))
+        client.send(RESPONSE.encode("UTF-8"))
         break
     client.close()
 

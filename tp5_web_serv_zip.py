@@ -2,6 +2,7 @@ import socket
 import re
 import os
 import logging
+import gzip
 
 HOST = '127.0.0.1'
 PORT = 9999
@@ -76,7 +77,9 @@ def get_file_bytes(filename:str, ip:str) -> bytes:
 
     logging.info("Fichier %s enovyé au client %s", filename, ip)
 
-    return file_content
+    compressed_data = gzip.compress(file_content)
+
+    return compressed_data
 
 
 
@@ -111,7 +114,7 @@ while True:
             if os.path.isfile(f'{HTML_MODELS}/{REQUEST}'):
                 # === Fichiers ===
                 if REQUEST.endswith(".png"):
-                    RESPONSE = "HTTP/1.0 200 OK\r\nContent-Type: image/png\r\n\r\n"
+                    RESPONSE = "HTTP/1.0 200 OK\r\nContent-Type: image/png\r\nContent-Encoding: gzip\r\n\r\n"
                     response_file = get_file_bytes(REQUEST, client_ip)
                     client.send(RESPONSE.encode("UTF-8"))
                     client.send(response_file)
