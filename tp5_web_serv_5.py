@@ -54,7 +54,7 @@ logger.addHandler(console_handler)
 
 
 # ===== FUNCTION =====
-def readHTML(fileName:str, client_ip:str):
+def readHTML(fileName:str, client_ip:str) -> str:
     file = open(f'{HTML_MODELS}/{fileName}')
     html_content = file.read()
     file.close()
@@ -62,6 +62,9 @@ def readHTML(fileName:str, client_ip:str):
     logging.info("Fichier %s enovyé au client %s", fileName, client_ip)
 
     return html_content
+
+def convertImage(fileName:str):
+    return
 
 
 
@@ -86,20 +89,26 @@ while True:
         if extractGet:
             request = extractGet.group(0)
 
-            # Petite route de base pour faire joli
-            if request == "/":
-                request = "/index"
+            # === Fichiers ===
+            if request.endswith(".jpg"):
+                
 
-            if not ".html" in request:
-                request+=".html"
-
-            request = request[1:]
-            if os.path.isfile(f'{HTML_MODELS}/{request}'):
-                html_content = readHTML(request, client_ip)
-                response = "HTTP/1.0 200 OK\n\n" + html_content
+            # === HTML ===
             else:
-                html_content = readHTML("404.html", client_ip)
-                response = "HTTP/1.0 404 Not Found\n\n" + html_content
+                # Petite route de base pour faire joli
+                if request == "/":
+                    request = "/index"
+
+                if not ".html" in request:
+                    request+=".html"
+
+                request = request[1:]
+                if os.path.isfile(f'{HTML_MODELS}/{request}'):
+                    html_content = readHTML(request, client_ip)
+                    response = "HTTP/1.0 200 OK\n\n" + html_content
+                else:
+                    html_content = readHTML("404.html", client_ip)
+                    response = "HTTP/1.0 404 Not Found\n\n" + html_content
         else:
             html_content = readHTML("400.html", client_ip)
             response = "HTTP/1.0 400 Bad Request\n\n" + html_content
